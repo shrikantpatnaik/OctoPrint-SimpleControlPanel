@@ -8,7 +8,7 @@ import pigpio
 from .RotaryDecoder import Decoder
 
 
-class LedstripphysicalcontrolPlugin(octoprint.plugin.StartupPlugin,
+class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 									octoprint.plugin.TemplatePlugin,
 									octoprint.plugin.SettingsPlugin,
 									octoprint.plugin.AssetPlugin,
@@ -103,8 +103,8 @@ class LedstripphysicalcontrolPlugin(octoprint.plugin.StartupPlugin,
 
 	def get_assets(self):
 		return dict(
-			js=["js/LEDStripPhysicalControl.js"],
-			css=["css/LEDStripPhysicalControl.css"]
+			js=["js/SimpleControlPanel.js"],
+			css=["css/SimpleControlPanel.css"]
 		)
 
 	def hw_brightness_control(self, level):
@@ -118,6 +118,7 @@ class LedstripphysicalcontrolPlugin(octoprint.plugin.StartupPlugin,
 			self.set_brightness()
 
 	def button_pressed(self, gpio, level, tick):
+		self._logger.info('button pressed')
 		if tick - self.lastTick > 50000 or gpio != self.lastGpio:
 			self.lastGpio = gpio
 			self.lastTick = tick
@@ -180,9 +181,10 @@ class LedstripphysicalcontrolPlugin(octoprint.plugin.StartupPlugin,
 		self.set_pwm(self.current_brightness)
 
 	def set_pwm(self, value):
+		self._logger.info("Setting Mosfet")
 		if self._settings.get(["mosfet_enabled"]):
 			self.pi.hardware_PWM(int(self._settings.get(["mosfet_pin"])), 800, value * 10000)
 
 
-__plugin_name__ = "Led Strip Physical Control Plugin"
-__plugin_implementation__ = LedstripphysicalcontrolPlugin()
+__plugin_name__ = "Simple Control Panel Plugin"
+__plugin_implementation__ = SimpleControlPanelPlugin()

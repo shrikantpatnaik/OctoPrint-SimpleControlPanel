@@ -1,17 +1,17 @@
-#tab_plugin_LEDStripPhysicalControl iframe {
+#tab_plugin_SimpleControlPanel iframe {
   width: 100%;
   height: 600px;
   border: 1px solid #808080;
 }
 
-#navbar_plugin_LEDStripPhysicalControl .slidecontainer {
+#navbar_plugin_SimpleControlPanel .slidecontainer {
   width: 100%; /* Width of the outside container */
   margin: auto;
   text-align:center;
 }
 
 /* The slider itself */
-#navbar_plugin_LEDStripPhysicalControl .slider {
+#navbar_plugin_SimpleControlPanel .slider {
   -webkit-appearance: none;  /* Override default CSS styles */
   appearance: none;
   width: 80%; /* Full-width */
@@ -25,12 +25,12 @@
 }
 
 /* Mouse-over effects */
-#navbar_plugin_LEDStripPhysicalControl .slider:hover {
+#navbar_plugin_SimpleControlPanel .slider:hover {
   opacity: 1; /* Fully shown on mouse-over */
 }
 
 /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
-#navbar_plugin_LEDStripPhysicalControl .slider::-webkit-slider-thumb {
+#navbar_plugin_SimpleControlPanel .slider::-webkit-slider-thumb {
   -webkit-appearance: none; /* Override default look */
   appearance: none;
   width: 15px; /* Set a specific slider handle width */
@@ -40,7 +40,7 @@
   cursor: pointer; /* Cursor on hover */
 }
 
-#navbar_plugin_LEDStripPhysicalControl .slider::-moz-range-thumb {
+#navbar_plugin_SimpleControlPanel .slider::-moz-range-thumb {
   width: 15px; /* Set a specific slider handle width */
   height: 15px;
   border-radius: 50%;

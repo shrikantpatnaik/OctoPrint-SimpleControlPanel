@@ -1,4 +1,4 @@
 include README.md
-recursive-include octoprint_LEDStripPhysicalControl/templates *
-recursive-include octoprint_LEDStripPhysicalControl/translations *
-recursive-include octoprint_LEDStripPhysicalControl/static *
+recursive-include octoprint_SimpleControlPanel/templates *
+recursive-include octoprint_SimpleControlPanel/translations *
+recursive-include octoprint_SimpleControlPanel/static *

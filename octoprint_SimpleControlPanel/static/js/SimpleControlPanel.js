@@ -1,7 +1,7 @@
 $(function() {
-    function LEDStripPhysicalControlViewModel(parameters) {
+    function SimpleControlPanelViewModel(parameters) {
         var self = this;
-        self.pluginName = "LEDStripPhysicalControl";
+        self.pluginName = "SimpleControlPanel";
         self.settings = parameters[0];
 
         self.currentBrightness = ko.observable();
@@ -18,8 +18,6 @@ $(function() {
                     console.log(error)
                 }
             })
-            // console.log(newValue);
-            // console.log(self.buildPluginUrl('/brightness'))
         });
 
         self.getBackendValue = function() {
@@ -49,7 +47,7 @@ $(function() {
     // information to the global variable OCTOPRINT_VIEWMODELS
     OCTOPRINT_VIEWMODELS.push([
         // This is the constructor to call for instantiating the plugin
-        LEDStripPhysicalControlViewModel,
+        SimpleControlPanelViewModel,
 
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
@@ -57,6 +55,6 @@ $(function() {
         ["settingsViewModel"],
 
         // Finally, this is the list of selectors for all elements we want this view model to be bound to.
-        ["#navbar_plugin_LEDStripPhysicalControl"]
+        ["#navbar_plugin_SimpleControlPanel"]
     ]);
 });
