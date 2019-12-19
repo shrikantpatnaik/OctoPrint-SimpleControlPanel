@@ -149,7 +149,9 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 			move_value = multiplier * int(self._settings.get(["default_z_move"]))
 		else:
 			move_value = multiplier * int(self._settings.get(["default_xy_move"]))
-		self._printer.commands('G91', 'G1 %s%s' % (axis, move_value))
+		self._printer.commands('G91')
+		self._printer.commands('G1 %s%s' % (axis, move_value))
+
 
 	@octoprint.plugin.BlueprintPlugin.route("/brightness", methods=["GET"])
 	def get_brightness(self):
