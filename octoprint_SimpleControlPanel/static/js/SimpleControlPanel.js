@@ -70,6 +70,9 @@ $(function() {
         };
 
         self.onDataUpdaterPluginMessage = function(plugin, data) {
+            if(plugin != "SimpleControlPanel") {
+                return
+            }
             self.currentBrightness(data.brightness);
             self.temps(data.temps);
         };
