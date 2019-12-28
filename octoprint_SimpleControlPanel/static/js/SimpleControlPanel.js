@@ -37,16 +37,30 @@ $(function() {
             }
             if(self.settings.settings.plugins.SimpleControlPanel.temp_1_enabled()) {
                 string +="| ";
-                string += self.settings.settings.plugins.SimpleControlPanel.temp_1_name() + ":" + newValue.temp_1.temp + "°C";
-                string +=" ";
-                string += newValue.temp_1.hum + "%";
-                string +=" ";
+                if(newValue.temp_1) {
+                    if(newValue.temp_1.temp) {
+                        string += self.settings.settings.plugins.SimpleControlPanel.temp_1_name() + ":" + newValue.temp_1.temp + "°C";
+                        string +=" ";
+                    }
+                    if(newValue.temp_1.hum) {
+                        string += newValue.temp_1.hum + "%";
+                        string +=" ";
+                    }
+                }
             }
+
             if(self.settings.settings.plugins.SimpleControlPanel.temp_2_enabled()) {
                 string +="| ";
-                string += self.settings.settings.plugins.SimpleControlPanel.temp_2_name() + ":" + newValue.temp_2.temp + "°C";
-                string +=" ";
-                string += newValue.temp_2.hum + "%"
+                if(newValue.temp_2) {
+                    if(newValue.temp_2.temp) {
+                        string += self.settings.settings.plugins.SimpleControlPanel.temp_2_name() + ":" + newValue.temp_2.temp + "°C";
+                        string +=" ";
+                    }
+                    if(newValue.temp_2.hum) {
+                        string += newValue.temp_2.hum + "%";
+                        string +=" ";
+                    }
+                }
             }
             self.tempString(string)
         });
