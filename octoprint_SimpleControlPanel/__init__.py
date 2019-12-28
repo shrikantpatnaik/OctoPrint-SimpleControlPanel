@@ -4,7 +4,9 @@ from flask import url_for, jsonify, request, make_response, Response
 from werkzeug.exceptions import BadRequest
 
 import octoprint.plugin
+from octoprint.util import RepeatedTimer
 import pigpio
+import Adafruit_DHT
 from .RotaryDecoder import Decoder
 
 
@@ -19,6 +21,8 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 	callbacks = []
 	lastGpio = 0
 	lastTick = 0
+	frontEndUpdateTimer = None
+	temps = {}
 
 	def on_after_startup(self):
 		self.initialize()
@@ -48,6 +52,9 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 
 		if self._settings.get(["stop_enabled"]):
 			self.enable_button(int(self._settings.get(["stop_pin"])))
+
+		self.frontEndUpdateTimer = RepeatedTimer(30.0, self.frontend_update)
+		self.frontEndUpdateTimer.start()
 
 	def clear_gpio(self):
 		if self._settings.get(["enc_enabled"]):
@@ -92,8 +99,15 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 					z_minus_pin="18",
 					default_xy_move="10",
 					default_z_move="1",
-					default_brightness="50")
-
+					default_brightness="50",
+					temp_1_enabled=True,
+					temp_1_name="E",
+					temp_1_type='11',
+					temp_1_pin='12',
+					temp_2_enabled=True,
+					temp_2_name="FB",
+					temp_2_type='2302',
+					temp_2_pin='25')
 
 	def get_template_configs(self):
 		return [
@@ -152,10 +166,40 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 		self._printer.commands('G91')
 		self._printer.commands('G1 %s%s' % (axis, move_value))
 
+	def temp_type_to_adafruit_type(self, sensor_type):
+		if sensor_type == '11':
+			return Adafruit_DHT.DHT11
+		elif sensor_type == '22':
+			return Adafruit_DHT.DHT22
+		elif sensor_type == '2302':
+			return Adafruit_DHT.AM2302
+
+	def update_temps(self):
+		return_json = {}
+		if self._settings.get(["temp_1_enabled"]):
+			humidity1, temperature1 = Adafruit_DHT.read_retry(
+				self.temp_type_to_adafruit_type(self._settings.get(["temp_1_type"])),
+				int(self._settings.get(["temp_1_pin"])))
+
+			return_json['temp_1'] = {"temp": temperature1, "hum": humidity1}
+		if self._settings.get(["temp_2_enabled"]):
+			humidity2, temperature2 = Adafruit_DHT.read_retry(
+				self.temp_type_to_adafruit_type(self._settings.get(["temp_2_type"])),
+				int(self._settings.get(["temp_2_pin"])))
+			return_json['temp_2'] = {"temp": temperature2, "hum": humidity2}
+		return return_json
+
+	@octoprint.plugin.BlueprintPlugin.route("/values", methods=["GET"])
+	def get_values(self):
+		return make_response(jsonify(dict(brightness=self.current_brightness, temps=self.temps)), 200)
 
 	@octoprint.plugin.BlueprintPlugin.route("/brightness", methods=["GET"])
 	def get_brightness(self):
 		return make_response(jsonify({"current_brightness": self.current_brightness}), 200)
+
+	def frontend_update(self):
+		self.temps = self.update_temps()
+		self._plugin_manager.send_plugin_message(self._identifier, dict(brightness=self.current_brightness, temps=self.temps))
 
 	@octoprint.plugin.BlueprintPlugin.route("/brightness", methods=["PATCH"])
 	def sw_brightness_control(self):

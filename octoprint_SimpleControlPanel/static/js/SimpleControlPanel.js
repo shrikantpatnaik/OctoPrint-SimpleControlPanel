@@ -2,9 +2,13 @@ $(function() {
     function SimpleControlPanelViewModel(parameters) {
         var self = this;
         self.pluginName = "SimpleControlPanel";
-        self.settings = parameters[0];
+        self.temperatureModel = parameters[0];
+        self.settings = parameters[1];
 
         self.currentBrightness = ko.observable();
+        self.temps = ko.observable();
+        self.tempString = ko.observable();
+        self.tempString("Loading...");
 
         self.currentBrightness.subscribe(function(newValue) {
             $.ajax({
@@ -20,26 +24,54 @@ $(function() {
             })
         });
 
-        self.getBackendValue = function() {
+        self.temps.subscribe(function(newValue) {
+            var string = "";
+            if(self.temperatureModel.hasBed()) {
+                string += "B:" + self.temperatureModel.bedTemp.actual()+ "°C";
+                string +=" |";
+            }
+            if(self.temperatureModel.hasTools()) {
+                string +=" ";
+                string += "T:" + self.temperatureModel.tools()[0].actual()+ "°C";
+                string +=" ";
+            }
+            if(self.settings.settings.plugins.SimpleControlPanel.temp_1_enabled()) {
+                string +="| ";
+                string += self.settings.settings.plugins.SimpleControlPanel.temp_1_name() + ":" + newValue.temp_1.temp + "°C";
+                string +=" ";
+                string += newValue.temp_1.hum + "%";
+                string +=" ";
+            }
+            if(self.settings.settings.plugins.SimpleControlPanel.temp_2_enabled()) {
+                string +="| ";
+                string += self.settings.settings.plugins.SimpleControlPanel.temp_2_name() + ":" + newValue.temp_2.temp + "°C";
+                string +=" ";
+                string += newValue.temp_2.hum + "%"
+            }
+            self.tempString(string)
+        });
+
+        self.buildPluginUrl = function (path) {
+            return window.PLUGIN_BASEURL + self.pluginName + path;
+        };
+
+        self.onDataUpdaterPluginMessage = function(plugin, data) {
+            self.currentBrightness(data.brightness);
+            self.temps(data.temps);
+        };
+
+        self.onBeforeBinding = function() {
             $.ajax({
                 type: "GET",
                 dataType: "json",
                 contentType: "application/json",
-                url: self.buildPluginUrl('/brightness'),
+                url: self.buildPluginUrl('/values'),
                 success: function(data) {
-                    self.currentBrightness(data['current_brightness'])
+                    self.currentBrightness(data.brightness);
+                    self.temps(data.temps);
                 }
             })
-        };
 
-        self.onBeforeBinding = function() {
-            self.getBackendValue();
-            setInterval(self.getBackendValue, 1000)
-
-        };
-
-        self.buildPluginUrl = function (path) {
-            return window.PLUGIN_BASEURL + self.pluginName + path;
         };
     }
 
@@ -52,7 +84,7 @@ $(function() {
         // This is a list of dependencies to inject into the plugin, the order which you request
         // here is the order in which the dependencies will be injected into your view model upon
         // instantiation via the parameters argument
-        ["settingsViewModel"],
+        ["temperatureViewModel", "settingsViewModel"],
 
         // Finally, this is the list of selectors for all elements we want this view model to be bound to.
         ["#navbar_plugin_SimpleControlPanel"]
