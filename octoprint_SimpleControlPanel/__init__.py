@@ -53,10 +53,12 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 		if self._settings.get(["stop_enabled"]):
 			self.enable_button(int(self._settings.get(["stop_pin"])))
 
+		self.update_temps()
 		self.frontEndUpdateTimer = RepeatedTimer(30.0, self.frontend_update)
 		self.frontEndUpdateTimer.start()
 
 	def clear_gpio(self):
+		self.frontEndUpdateTimer.cancel()
 		if self._settings.get(["enc_enabled"]):
 			self.rotary_decoder.cancel()
 		for cb in self.callbacks:
@@ -175,19 +177,19 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 			return Adafruit_DHT.AM2302
 
 	def update_temps(self):
-		return_json = {}
 		if self._settings.get(["temp_1_enabled"]):
 			humidity1, temperature1 = Adafruit_DHT.read_retry(
 				self.temp_type_to_adafruit_type(self._settings.get(["temp_1_type"])),
 				int(self._settings.get(["temp_1_pin"])))
+			if temperature1 is not None:
+				self.temps['temp_1'] = {"temp": round(temperature1, 1), "hum": round(humidity1, 1)}
 
-			return_json['temp_1'] = {"temp": temperature1, "hum": humidity1}
 		if self._settings.get(["temp_2_enabled"]):
 			humidity2, temperature2 = Adafruit_DHT.read_retry(
 				self.temp_type_to_adafruit_type(self._settings.get(["temp_2_type"])),
 				int(self._settings.get(["temp_2_pin"])))
-			return_json['temp_2'] = {"temp": temperature2, "hum": humidity2}
-		return return_json
+			if temperature2 is not None:
+				self.temps['temp_2'] = {"temp": round(temperature2, 1), "hum": round(humidity2, 1)}
 
 	@octoprint.plugin.BlueprintPlugin.route("/values", methods=["GET"])
 	def get_values(self):
@@ -198,7 +200,7 @@ class SimpleControlPanelPlugin(octoprint.plugin.StartupPlugin,
 		return make_response(jsonify({"current_brightness": self.current_brightness}), 200)
 
 	def frontend_update(self):
-		self.temps = self.update_temps()
+		self.update_temps()
 		self._plugin_manager.send_plugin_message(self._identifier, dict(brightness=self.current_brightness, temps=self.temps))
 
 	@octoprint.plugin.BlueprintPlugin.route("/brightness", methods=["PATCH"])
